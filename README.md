@@ -5,6 +5,10 @@ Este repositório contém a solução de **ETL (Extração, Transformação e Ca
 
 ---
 
+👨‍💻 Equipe
+
+Kleryton de Souza, Lucas Paim, Maiara Giavoni, Rafael Tafelli
+
 ## 🧠 Objetivo do Projeto
 
 A empresa enfrenta dificuldades em encontrar e engajar candidatos ideais para vagas de TI. O desafio é estruturar um pipeline que consolide os dados de candidatos, vagas e prospecções, gerando uma base unificada e limpa para alimentar modelos preditivos de "match".
