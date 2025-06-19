@@ -1,0 +1,2 @@
+etl/data/applicants.json filter=lfs diff=lfs merge=lfs -text
+etl/output/dataset_unificado.csv filter=lfs diff=lfs merge=lfs -text
