@@ -4,10 +4,6 @@ import pandas as pd
 import re
 
 def padronizar_nivel(texto, mapa_niveis):
-    """
-    Padroniza níveis como 'básico', 'fluente', etc., usando um mapa definido.
-    Retorna uma categoria padronizada ou 'Outro' se não houver correspondência.
-    """
     if not texto or not isinstance(texto, str):
         return "Desconhecido"
     texto = texto.strip().lower()
@@ -17,13 +13,25 @@ def padronizar_nivel(texto, mapa_niveis):
     return "Outro"
 
 def limpar_texto(texto):
-    """
-    Remove quebras de linha, múltiplos espaços e espaços extras em textos.
-    Retorna texto limpo ou string vazia se a entrada for inválida.
-    """
     if not texto or not isinstance(texto, str):
         return ""
     return re.sub(r"\s+", " ", texto).strip()
+
+def verificar_aprovacao(situacao):
+    if not situacao or not isinstance(situacao, str):
+        return 0
+
+    situacao = situacao.strip().lower()
+
+    # Lista das situações que indicam contratação ou aprovação
+    situacoes_positivas = {
+        "aprovado",
+        "proposta aceita",
+        "contratado como hunting",
+        "contratado pela decision"
+    }
+
+    return 1 if situacao in situacoes_positivas else 0
 
 # Mapas de padronização
 mapa_nivel_ingles = {
@@ -41,8 +49,10 @@ mapa_nivel_academico = {
 # Carregamento dos dados
 with open("../data/vagas.json", encoding="utf-8") as f:
     jobs_data = json.load(f)
+
 with open("../data/applicants.json", encoding="utf-8") as f:
     applicants_data = json.load(f)
+
 with open("../data/prospects.json", encoding="utf-8") as f:
     prospects_data = json.load(f)
 
@@ -104,6 +114,9 @@ for vaga_id, prospect_info in prospects_data.items():
             "conhecimentos_tecnicos": conhecimentos_tecnicos,
             "cv_texto": cv_texto,
 
+            "nivel_profissional": info_profissional.get("nivel_profissional", "Desconhecido"),
+            "local_candidato": info_profissional.get("cidade", "Desconhecido"),
+
             "situacao": situacao,
             "comentario": comentario,
             "recrutador": recrutador
@@ -112,9 +125,26 @@ for vaga_id, prospect_info in prospects_data.items():
 # Cria DataFrame consolidado
 df = pd.DataFrame(registros)
 
-# Criação da coluna target
-df["match"] = df["situacao"].apply(lambda x: 1 if "contratado" in str(x).lower() else 0)
+# Criação da coluna match
+df["match"] = df["situacao"].apply(verificar_aprovacao)
 
+# Verificação da distribuição do target
+total_registros = len(df)
+contagem_match = df['match'].value_counts()
+aprovados = contagem_match.get(1, 0)
+nao_aprovados = contagem_match.get(0, 0)
+
+print(f"\nTotal de registros: {total_registros}")
+print(f"Quantidade de candidatos aprovados (match=1): {aprovados}")
+print(f"Quantidade de candidatos não aprovados (match=0): {nao_aprovados}")
+
+if total_registros > 0:
+    print(f"Aprovados (%): {aprovados / total_registros * 100:.2f}%")
+    print(f"Não aprovados (%): {nao_aprovados / total_registros * 100:.2f}%")
+else:
+    print("O DataFrame está vazio.")
+
+# Cria pasta de saída se não existir
 output_path = os.path.abspath("../output")
 os.makedirs(output_path, exist_ok=True)
 
@@ -124,3 +154,9 @@ df.to_csv(output_file, index=False, encoding="utf-8-sig")
 
 print(f"\n✅ Dataset salvo com {len(df)} registros em: {output_file}")
 
+# Schema e amostra
+print("\n📋 Schema do DataFrame (colunas e tipos de dados):")
+print(df.dtypes)
+
+print("\n📊 Primeiras 100 linhas do dataset:")
+print(df.head(100))
