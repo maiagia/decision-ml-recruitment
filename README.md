@@ -1,115 +1,79 @@
 
 # 🚀 Datathon Pós-Tech: Machine Learning Engineering - Recrutamento com IA
 
-Este repositório contém a solução de **ETL (Extração, Transformação e Carga)** desenvolvida para o desafio do Datathon do curso Pós-Tech FIAP. A proposta é usar IA para otimizar o processo de recrutamento da empresa fictícia **Decision**, que atua na área de bodyshop de TI.
-
----
-
 👨‍💻 Equipe
 
 Kleryton de Souza, Lucas Paim, Maiara Giavoni, Rafael Tafelli
 
-## 🧠 Objetivo do Projeto
+# Decision Match Predictor - IA para Recrutamento Inteligente
 
-A empresa enfrenta dificuldades em encontrar e engajar candidatos ideais para vagas de TI. O desafio é estruturar um pipeline que consolide os dados de candidatos, vagas e prospecções, gerando uma base unificada e limpa para alimentar modelos preditivos de "match".
-
----
-
-## 📂 Base de Dados
-
-A base é composta por três arquivos JSON:
-
-- `vagas.json`: informações de vagas, clientes, localização, requisitos.
-- `applicants.json`: dados dos candidatos como nome, formação, idiomas, currículo.
-- `prospects.json`: histórico de encaminhamentos por vaga.
+Este projeto utiliza técnicas de Machine Learning para prever o "match" entre candidatos e vagas reais da empresa **Decision**, especializada em recrutamento no setor de TI.
 
 ---
 
-## ⚙️ Pipeline ETL
+## 📌 Visão Geral
 
-### ✅ Extração
+- O objetivo é automatizar parte do processo seletivo, ajudando hunters a identificar candidatos com maior potencial de contratação.
+- O modelo é treinado com dados históricos (candidatos, vagas e prospects) e considera múltiplas features estruturadas e textuais.
+- O app em **Streamlit** permite testar novos candidatos de forma interativa.
 
-Os arquivos JSON são lidos da pasta `data/`:
+---
 
-```python
-with open("../data/vagas.json") as f:
-    jobs_data = json.load(f)
+## 🧱 Estrutura do Projeto
+
 ```
-
----
-
-### 🔄 Transformação
-
-O processo consolida e padroniza os dados:
-
-- **Normalização de níveis** (idiomas e formação)
-- **Limpeza de textos** (currículo e requisitos)
-- **Criação do campo-alvo `match`**: `1` se o candidato foi contratado, `0` caso contrário.
-- **Tratamento de campos ausentes com valores padrão**
-
-Exemplo de limpeza de requisitos:
-
-```python
-requisitos = f"{tecnicos} {atividades}"
-requisitos = limpar_texto(requisitos)
+├── etl_dataset_match.ipynb         # Notebook para construção do dataset consolidado e balanceado
+├── modelo.ipynb                    # Notebook com pipeline de treinamento, ajuste de threshold e salvamento dos artefatos
+├── app_streamlit.py                # Interface interativa para inferência do modelo
+├── output/
+│   ├── modelo_match_xgb.joblib             # Modelo treinado (XGBoost)
+│   ├── preprocessador_xgb.joblib           # Pipeline de pré-processamento (ColumnTransformer)
+│   ├── vetorizador_sim_textual.joblib      # Vetorizar TF-IDF treinado para similaridade textual
+│   ├── dataset_unificado.csv               # Dataset original consolidado
+│   ├── dataset_unificado_balanceado.csv    # Dataset balanceado (50/50 match e não match)
+│   └── exemplos_para_teste_app.json        # Amostras reais para validação no app
+└── data/
+    ├── vagas.json
+    ├── applicants.json
+    └── prospects.json
 ```
 
 ---
 
-### 💾 Carga
+## 🚀 Como Executar
 
-O `DataFrame` final é salvo em:
+### 1. Instalar Dependências
 
-```python
-../output/dataset_unificado.csv
-```
+Crie um ambiente virtual (opcional) e instale os requisitos:
 
-E pode ser visualizado com:
-
-```python
-df.head(100)
-```
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-├── etl/
-│   ├── data/               # Arquivos JSON de entrada
-│   ├── output/             # Arquivo CSV final consolidado
-│   ├── notebooks/          # Análises e testes manuais
-│   ├── etl_pipeline.py     # Lógica principal do ETL
-│   └── requirements.txt    # Bibliotecas usadas
-```
-
----
-
-## ✅ Como Executar
-
-1. Clone este repositório:
-```bash
-git clone https://github.com/seu-usuario/api-etl-pipeline.git
-cd api-etl-pipeline/etl
-```
-
-2. Ative o ambiente virtual:
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate.bat  # Windows
-```
-
-3. Instale as dependências:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Execute o script:
+### 2. Executar o App
+
 ```bash
-python etl_pipeline.py
+streamlit run app_streamlit.py
 ```
 
-O arquivo `dataset_unificado.csv` será gerado na pasta `output/`.
+O app será iniciado em `http://localhost:8501`.
+
+---
+
+## 📊 O que o modelo considera?
+
+- Nível profissional, inglês, espanhol, acadêmico e local (vaga vs candidato)
+- Similaridade textual entre os requisitos da vaga e o currículo
+- Feature de similaridade ponderada (peso 0.3) para evitar overfitting em texto
+
+---
+
+## 🔍 Testes com Casos Reais
+
+- Os **10 cargos mais populares** foram selecionados com base nas candidaturas.
+- Para cada vaga, foi salvo:
+  - 1 exemplo real de **match**
+  - 1 exemplo real de **não-match**
+- Esses dados estão em `output/exemplos_para_teste_app.json`.
 
 ---
