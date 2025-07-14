@@ -8,6 +8,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+from sklearn.metrics import classification_report
 import joblib
 
 class ML_Recruitment:
@@ -22,6 +24,9 @@ class ML_Recruitment:
     __vTarget_Treino: pd.Series = None
     __vFeatures_Teste: pd.DataFrame = None
     __vTarget_Teste: pd.Series = None
+    __vModeloXGB: XGBClassifier = None
+    __vFeatures_Treino_Transformadas: np.array = None
+    __vFeatures_Teste_Transformadas: np.array = None
 
     def __init__(self, pCaminhoBase: str = '') -> None:
         self.caminhoBase = pCaminhoBase
@@ -253,6 +258,26 @@ class ML_Recruitment:
 
         self.pipeline = vPreProcessor
 
+    def salvarPipeline(self, pCaminhoArquivo: str) -> None:
+        """
+        Método para salvar a pipeline de pré-processamento em um arquivo.
+        """
+        if self.pipeline is None:
+            raise ValueError("Pipeline não foi criada. Use o método 'criarPipeline' primeiro.")
+        
+        joblib.dump(self.pipeline, pCaminhoArquivo)
+
+    def carregarPipeline(self, pCaminhoArquivo: str) -> None:
+        """
+        Método para carregar uma pipeline de pré-processamento de um arquivo.
+        """
+        try:
+            self.pipeline = joblib.load(pCaminhoArquivo)
+        except FileNotFoundError:
+            raise ValueError(f"Arquivo '{pCaminhoArquivo}' não encontrado.")
+        except Exception as e:
+            raise ValueError(f"Erro ao carregar a pipeline: {e}")
+
     def separarTreinoTeste(self, pProporcaoTreino: float = 0.2, pRandomState: int = 42) -> None:
         """
         Método para separar a base de dados em conjuntos de treino e teste.
@@ -263,7 +288,7 @@ class ML_Recruitment:
         if not (0 < pProporcaoTreino < 1):
             raise ValueError("A proporção de treino deve estar entre 0 e 1.")
         
-        self.features_Treino, self.features_Teste, self.target_Treino, self.target_Teste = train_test_split(self.features, self.target, test_size=pProporcaoTreino, random_state=pRandomState)
+        self.features_Treino, self.features_Teste, self.target_Treino, self.target_Teste = train_test_split(self.features, self.target, test_size=pProporcaoTreino, random_state=pRandomState, stratify=self.target)
 
     @property
     def features_Treino(self) -> pd.DataFrame:
@@ -404,7 +429,165 @@ class ML_Recruitment:
             raise TypeError("O target deve ser uma Series do pandas.")
         
         self.__vTarget = pTarget
+
+    @property
+    def modeloXGB(self) -> XGBClassifier:
+        """
+        Retorna o modelo XGBoost.
+        """
+        if self.__vModeloXGB is None:
+            raise ValueError("Modelo XGBoost não foi criado. Use o método 'treinarModeloXGB' primeiro.")
+        
+        return self.__vModeloXGB
     
+    @modeloXGB.setter
+    def modeloXGB(self, pModeloXGB: XGBClassifier):
+        """
+        Define o modelo XGBoost.
+        """
+        if not isinstance(pModeloXGB, XGBClassifier):
+            raise TypeError("O modelo XGBoost deve ser uma instância de XGBClassifier do xgboost.")
+        
+        self.__vModeloXGB = pModeloXGB
+
+    def executarPipeline(self, pAplicarEm: str = 'Treino_Teste') -> None:
+        """
+        Executa a pipeline de pré-processamento nas features fornecidas.
+        """
+        if self.pipeline is None:
+            raise ValueError("Pipeline não foi criada. Use o método 'criarPipeline' primeiro.")
+        
+        if pAplicarEm.upper() not in ['TREINO', 'TESTE', 'TREINO_TESTE']:
+            raise ValueError("O parâmetro 'pAplicarEm' deve ser 'Treino', 'Teste' ou 'Treino_Teste'.")
+        
+        if pAplicarEm.upper() == 'TREINO':
+            if self.features_Treino is None:
+                raise ValueError("Features de treino não foram definidas. Use o método 'separarTreinoTeste' primeiro.")
+            self.features_Treino_Transformadas = self.pipeline.fit_transform(self.features_Treino)
+        elif pAplicarEm.upper() == 'TESTE':
+            if self.features_Teste is None:
+                raise ValueError("Features de teste não foram definidas. Use o método 'separarTreinoTeste' primeiro.")
+            self.features_Teste_Transformadas = self.pipeline.transform(self.features_Teste)
+        else:
+            if self.features_Treino is None or self.features_Teste is None:
+                raise ValueError("Features de treino e teste não foram definidas. Use o método 'separarTreinoTeste' primeiro.")
+            self.features_Treino_Transformadas = self.pipeline.fit_transform(self.features_Treino)
+            self.features_Teste_Transformadas = self.pipeline.transform(self.features_Teste)
+
+    @property
+    def features_Treino_Transformadas(self) -> np.array:
+        """
+        Retorna as features de treino transformadas pela pipeline.
+        """
+        if self.__vFeatures_Treino_Transformadas is None:
+            raise ValueError("Features de treino transformadas não foram criadas. Use o método 'executarPipeline' primeiro.")
+        
+        return self.__vFeatures_Treino_Transformadas
+    
+    @features_Treino_Transformadas.setter
+    def features_Treino_Transformadas(self, pFeatures_Treino_Transformadas: np.array):
+        """
+        Define as features de treino transformadas pela pipeline.
+        """
+        self.__vFeatures_Treino_Transformadas = pFeatures_Treino_Transformadas
+    
+    @property
+    def features_Teste_Transformadas(self) -> np.array:
+        """
+        Retorna as features de teste transformadas pela pipeline.
+        """
+        if self.__vFeatures_Teste_Transformadas is None:
+            raise ValueError("Features de teste transformadas não foram criadas. Use o método 'executarPipeline' primeiro.")
+        
+        return self.__vFeatures_Teste_Transformadas
+    
+    @features_Teste_Transformadas.setter
+    def features_Teste_Transformadas(self, pFeatures_Teste_Transformadas: np.array):
+        """
+        Define as features de teste transformadas pela pipeline.
+        """
+        self.__vFeatures_Teste_Transformadas = pFeatures_Teste_Transformadas
+
+    def criarModeloXGB(self, pParametros: dict = None, pTreinarModelo: bool = False) -> None:
+        """
+        Método para criar e treinar um modelo XGBoost.
+        """
+        if self.features_Treino_Transformadas is None or self.target_Treino is None:
+            raise ValueError("Features de treino transformadas e target de treino não foram definidos. Use os métodos 'executarPipeline' e 'separarTreinoTeste' primeiro.")
+        
+        vParametros = pParametros if pParametros else {}
+        self.modeloXGB = XGBClassifier(**vParametros)
+
+        if pTreinarModelo:
+            self.treinarModeloXGB()
+
+
+    def treinarModeloXGB(self) -> None:
+        """
+        Método para treinar o modelo XGBoost com as features e target de treino.
+        """
+        if self.modeloXGB is None:
+            raise ValueError("Modelo XGBoost não foi criado. Use o método 'criarModeloXGB' primeiro.")
+        
+        if self.features_Treino_Transformadas is None or self.target_Treino is None:
+            raise ValueError("Features de treino transformadas e target de treino não foram definidos. Use os métodos 'executarPipeline' e 'separarTreinoTeste' primeiro.")
+        
+        self.modeloXGB.fit(self.features_Treino_Transformadas, self.target_Treino, eval_set=[(self.features_Teste_Transformadas, self.target_Teste)], verbose=False)
+
+    def avaliarModeloXGB(self, pOutputDict: bool = False) -> str:
+        """
+        Método para avaliar o modelo XGBoost usando o conjunto de teste.
+        Retorna um relatório de classificação.
+        """
+        if self.modeloXGB is None:
+            raise ValueError("Modelo XGBoost não foi criado. Use o método 'criarModeloXGB' primeiro.")
+        
+        if self.features_Teste_Transformadas is None or self.target_Teste is None:
+            raise ValueError("Features de teste transformadas e target de teste não foram definidos. Use os métodos 'executarPipeline' e 'separarTreinoTeste' primeiro.")
+        
+        vPredicoes = self.modeloXGB.predict(self.features_Teste_Transformadas)
+        vRelatorio = classification_report(self.target_Teste, vPredicoes, output_dict=pOutputDict, digits=3)
+        
+        return vRelatorio
+    
+    def salvarModeloXGB(self, pCaminhoArquivo: str) -> None:
+        """
+        Método para salvar o modelo XGBoost em um arquivo.
+        """
+        if self.modeloXGB is None:
+            raise ValueError("Modelo XGBoost não foi criado. Use o método 'criarModeloXGB' primeiro.")
+        
+        joblib.dump(self.modeloXGB, pCaminhoArquivo)
+
+    def carregarModeloXGB(self, pCaminhoArquivo: str) -> None:
+        """
+        Método para carregar um modelo XGBoost de um arquivo.
+        """
+        try:
+            self.modeloXGB = joblib.load(pCaminhoArquivo)
+        except FileNotFoundError:
+            raise ValueError(f"Arquivo '{pCaminhoArquivo}' não encontrado.")
+        except Exception as e:
+            raise ValueError(f"Erro ao carregar o modelo XGBoost: {e}")
+        
+
+    def prever(self, pFeatures: pd.DataFrame) -> np.array:
+        """
+        Método para fazer previsões usando o modelo XGBoost.
+        """
+        if self.modeloXGB is None:
+            raise ValueError("Modelo XGBoost não foi criado. Use o método 'criarModeloXGB' primeiro.")
+        
+        if self.pipeline is None:
+            raise ValueError("Pipeline não foi criada. Use o método 'criarPipeline' primeiro.")
+        
+        if not isinstance(pFeatures, pd.DataFrame):
+            raise TypeError("As features devem ser um DataFrame do pandas.")
+        
+        vFeatures_Transformadas = self.pipeline.transform(pFeatures)
+        vPredicoes = self.modeloXGB.predict(vFeatures_Transformadas)
+        
+        return vPredicoes
 
     def __del__(self):
         """
