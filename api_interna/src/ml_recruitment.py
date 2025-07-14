@@ -589,6 +589,24 @@ class ML_Recruitment:
         
         return vPredicoes
 
+    def preverProbabilidades(self, pFeatures: pd.DataFrame) -> np.array:
+        """
+        Método para prever as probabilidades usando o modelo XGBoost.
+        """
+        if self.modeloXGB is None:
+            raise ValueError("Modelo XGBoost não foi criado. Use o método 'criarModeloXGB' primeiro.")
+        
+        if self.pipeline is None:
+            raise ValueError("Pipeline não foi criada. Use o método 'criarPipeline' primeiro.")
+        
+        if not isinstance(pFeatures, pd.DataFrame):
+            raise TypeError("As features devem ser um DataFrame do pandas.")
+        
+        vFeatures_Transformadas = self.pipeline.transform(pFeatures)
+        vProbabilidades = self.modeloXGB.predict_proba(vFeatures_Transformadas)[:, 1]
+        
+        return vProbabilidades
+
     def __del__(self):
         """
         Método chamado quando o objeto é destruído.

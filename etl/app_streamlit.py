@@ -3,6 +3,9 @@ import pandas as pd
 import joblib
 import json
 import numpy as np
+from ml_recruitment import ML_Recruitment
+
+vML = ML_Recruitment()
 
 # ======= Inicializar session_state com valores padrão =======
 st.session_state.setdefault("nivel_profissional_candidato", "Júnior")
@@ -13,9 +16,13 @@ st.session_state.setdefault("local_candidato", "São Paulo")
 st.session_state.setdefault("cv_texto", "Descreva aqui as experiências e qualificações...")
 
 # ======= Carregar artefatos =======
-modelo = joblib.load("output/modelo_match_xgb.joblib")
-preprocessador = joblib.load("output/preprocessador_xgb.joblib")
-vetorizador_sim = joblib.load("output/vetorizador_sim_textual.joblib")
+# modelo = joblib.load("output/modelo_match_xgb.joblib")
+# preprocessador = joblib.load("output/preprocessador_xgb.joblib")
+# vetorizador_sim = joblib.load("output/vetorizador_sim_textual.joblib")
+
+vML.carregarModeloXGB(r'output/modelo_match_xgb.joblib')
+vML.carregarPipeline(r'output/preprocessador_xgb.joblib')
+vML.carregarVetorizadorTextual(r'output/vetorizador_sim_textual.joblib')
 
 with open("output/thresholds_dinamicos.json", "r", encoding="utf-8") as f:
     thresholds = json.load(f)
@@ -110,30 +117,49 @@ if st.button("Prever Match"):
         "cv_texto": cv_texto_lower,
     }])
 
+    # Passar os dados para a api interna
+    vML.baseDeDados = dados
+
+    # Padronizar a base de dados
+    vML.padronizarBase(pListaDeColunasParaFillNA=['requisitos_vaga', 'cv_texto'], pPreencherNulosCom='vazio', pPadronizarColunasTexto=False)
+
+
     # Features auxiliares
-    dados["match_nivel"] = (dados["nivel_profissional_vaga"] == dados["nivel_profissional_candidato"]).astype(int)
-    dados["match_profissional"] = (dados["nivel_profissional_vaga"] == dados["nivel_profissional_candidato"]).astype(int)
-    dados["match_ingles"] = (dados["nivel_ingles_vaga"] == dados["nivel_ingles_candidato"]).astype(int)
-    dados["match_espanhol"] = (dados["nivel_espanhol_vaga"] == dados["nivel_espanhol_candidato"]).astype(int)
-    dados["match_local"] = (dados["local_vaga"] == dados["local_candidato"]).astype(int)
-    dados["match_academico"] = (dados["nivel_academico_vaga"] == dados["nivel_academico_candidato"]).astype(int)
+    # dados["match_nivel"] = (dados["nivel_profissional_vaga"] == dados["nivel_profissional_candidato"]).astype(int)
+    # dados["match_profissional"] = (dados["nivel_profissional_vaga"] == dados["nivel_profissional_candidato"]).astype(int)
+    # dados["match_ingles"] = (dados["nivel_ingles_vaga"] == dados["nivel_ingles_candidato"]).astype(int)
+    # dados["match_espanhol"] = (dados["nivel_espanhol_vaga"] == dados["nivel_espanhol_candidato"]).astype(int)
+    # dados["match_local"] = (dados["local_vaga"] == dados["local_candidato"]).astype(int)
+    # dados["match_academico"] = (dados["nivel_academico_vaga"] == dados["nivel_academico_candidato"]).astype(int)
+
+    vML.baseDeDados["match_nivel"] = (vML.baseDeDados["nivel_profissional_vaga"] == vML.baseDeDados["nivel_profissional_candidato"]).astype(int)
+    vML.baseDeDados["match_profissional"] = (vML.baseDeDados["nivel_profissional_vaga"] == vML.baseDeDados["nivel_profissional_candidato"]).astype(int)
+    vML.baseDeDados["match_ingles"] = (vML.baseDeDados["nivel_ingles_vaga"] == vML.baseDeDados["nivel_ingles_candidato"]).astype(int)
+    vML.baseDeDados["match_espanhol"] = (vML.baseDeDados["nivel_espanhol_vaga"] == vML.baseDeDados["nivel_espanhol_candidato"]).astype(int)
+    vML.baseDeDados["match_local"] = (vML.baseDeDados["local_vaga"] == vML.baseDeDados["local_candidato"]).astype(int)
+    vML.baseDeDados["match_academico"] = (vML.baseDeDados["nivel_academico_vaga"] == vML.baseDeDados["nivel_academico_candidato"]).astype(int)
 
     # Similaridade textual
-    req_vec = vetorizador_sim.transform(dados["requisitos_vaga"])
-    cv_vec = vetorizador_sim.transform(dados["cv_texto"])
-    dados["sim_textual"] = np.array(req_vec.multiply(cv_vec).sum(axis=1)).ravel()
+    # req_vec = vetorizador_sim.transform(dados["requisitos_vaga"])
+    # cv_vec = vetorizador_sim.transform(dados["cv_texto"])
+    # dados["sim_textual"] = np.array(req_vec.multiply(cv_vec).sum(axis=1)).ravel()
+
+    # Calcular a similaridade textual
+    vML.baseDeDados['sim_textual'] = vML.calcularSimilaridadeTextual(pListaColunas=['requisitos_vaga', 'cv_texto'])
 
     # Garantir colunas esperadas
-    colunas_esperadas = preprocessador.feature_names_in_
+    colunas_esperadas = vML.pipeline.feature_names_in_
     for col in colunas_esperadas:
         if col not in dados.columns:
             dados[col] = ""
 
     dados = dados[colunas_esperadas]
-    dados_transf = preprocessador.transform(dados)
-    prob = modelo.predict_proba(dados_transf)[0][1]
+    # dados_transf = preprocessador.transform(dados)
+    # prob = modelo.predict_proba(dados_transf)[0][1]
+    prob = vML.preverProbabilidades(pFeatures=dados)[0]
 
-    grupo = dados["nivel_profissional_vaga"].values[0]
+
+    grupo = vML.baseDeDados["nivel_profissional_vaga"].values[0]
     threshold = thresholds.get(grupo, 0.5)
     pred = int(prob >= threshold)
 
