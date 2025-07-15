@@ -1,4 +1,0 @@
-✅ Dataset carregado com sucesso!
-Formato: (53735, 22)
-
-🔍 Calculando similaridade textual...

@@ -1,0 +1,80 @@
+2025-07-12 12:32:49,733 - INFO - === Avaliação com threshold fixo ===
+2025-07-12 12:32:49,735 - INFO - Threshold utilizado: 0.50
+2025-07-12 12:32:49,739 - INFO - Total de exemplos: 1278
+2025-07-12 12:32:49,740 - INFO - Número de positivos previstos: 514
+2025-07-12 12:32:49,741 - INFO - Número de negativos previstos: 764
+2025-07-12 12:34:20,906 - INFO - === Avaliação com threshold fixo ===
+2025-07-12 12:34:20,906 - INFO - Threshold utilizado: 0.50
+2025-07-12 12:34:20,906 - INFO - Total de exemplos: 1278
+2025-07-12 12:34:20,907 - INFO - Número de positivos previstos: 514
+2025-07-12 12:34:20,908 - INFO - Número de negativos previstos: 764
+2025-07-12 12:34:20,909 - INFO - 
+              precision    recall  f1-score   support
+
+           0      0.695     0.831     0.757       639
+           1      0.790     0.635     0.704       639
+
+    accuracy                          0.733      1278
+   macro avg      0.742     0.733     0.731      1278
+weighted avg      0.742     0.733     0.731      1278
+
+2025-07-12 12:34:38,703 - INFO - === Avaliação com threshold fixo ===
+2025-07-12 12:34:38,703 - INFO - Threshold utilizado: 0.50
+2025-07-12 12:34:38,704 - INFO - Total de exemplos: 1278
+2025-07-12 12:34:38,704 - INFO - Número de positivos previstos: 514
+2025-07-12 12:34:38,704 - INFO - Número de negativos previstos: 764
+2025-07-12 12:34:38,705 - INFO - 
+              precision    recall  f1-score   support
+
+           0      0.695     0.831     0.757       639
+           1      0.790     0.635     0.704       639
+
+    accuracy                          0.733      1278
+   macro avg      0.742     0.733     0.731      1278
+weighted avg      0.742     0.733     0.731      1278
+
+2025-07-12 12:34:38,757 - INFO - === Avaliação com threshold fixo ===
+2025-07-12 12:34:38,757 - INFO - Threshold utilizado: 0.50
+2025-07-12 12:34:38,758 - INFO - Total de exemplos: 1278
+2025-07-12 12:34:38,758 - INFO - Número de positivos previstos: 514
+2025-07-12 12:34:38,759 - INFO - Número de negativos previstos: 764
+2025-07-12 12:34:38,759 - INFO - 
+              precision    recall  f1-score   support
+
+           0      0.695     0.831     0.757       639
+           1      0.790     0.635     0.704       639
+
+    accuracy                          0.733      1278
+   macro avg      0.742     0.733     0.731      1278
+weighted avg      0.742     0.733     0.731      1278
+
+2025-07-12 13:32:35,392 - INFO - === Avaliação com threshold fixo ===
+2025-07-12 13:32:35,393 - INFO - Threshold utilizado: 0.50
+2025-07-12 13:32:35,393 - INFO - Total de exemplos: 1278
+2025-07-12 13:32:35,393 - INFO - Número de positivos previstos: 514
+2025-07-12 13:32:35,394 - INFO - Número de negativos previstos: 764
+2025-07-12 13:32:35,394 - INFO - 
+              precision    recall  f1-score   support
+
+           0      0.695     0.831     0.757       639
+           1      0.790     0.635     0.704       639
+
+    accuracy                          0.733      1278
+   macro avg      0.742     0.733     0.731      1278
+weighted avg      0.742     0.733     0.731      1278
+
+2025-07-12 13:32:35,440 - INFO - === Avaliação com threshold fixo ===
+2025-07-12 13:32:35,440 - INFO - Threshold utilizado: 0.50
+2025-07-12 13:32:35,441 - INFO - Total de exemplos: 1278
+2025-07-12 13:32:35,441 - INFO - Número de positivos previstos: 514
+2025-07-12 13:32:35,441 - INFO - Número de negativos previstos: 764
+2025-07-12 13:32:35,441 - INFO - 
+              precision    recall  f1-score   support
+
+           0      0.695     0.831     0.757       639
+           1      0.790     0.635     0.704       639
+
+    accuracy                          0.733      1278
+   macro avg      0.742     0.733     0.731      1278
+weighted avg      0.742     0.733     0.731      1278
+
