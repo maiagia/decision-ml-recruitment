@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: ml-recruitment
+Version: 0.1.0
+Summary: Pacote para treinar e pré-processar
+Author-email: MLET3 <mlet3@gmail.com>
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
