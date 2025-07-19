@@ -29,4 +29,4 @@ RUN chmod +x /app-streamlit/start.sh
 EXPOSE 8000 8501
 
 # Executa os dois apps
-CMD ["./start.sh"]
+CMD ["/app-streamlit/start.sh"]

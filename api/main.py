@@ -1,4 +1,5 @@
-from ml_recruitment import ML_Recruitment
+# from ml_recruitment import ML_Recruitment
+from api_interna.src.ml_recruitment import ML_Recruitment
 from fastapi import FastAPI
 from typing import List
 from pydantic import BaseModel
@@ -45,4 +46,11 @@ def preverMatch(pRequisicao: PreverRequest) -> dict:
     vML.baseDeDados['sim_textual'] = vML.calcularSimilaridadeTextual(pListaColunas=['requisitos_vaga', 'cv_texto'])
 
     vResultado = vML.preverProbabilidades(pFeatures=vDados)
-    return {"match": vResultado.tolist()[0]}
+    print({
+        "match": vResultado.tolist()[0],
+        "sim_textual": vML.baseDeDados['sim_textual'].values[0]
+            })
+    return {
+        "match": vResultado.tolist()[0],
+        "sim_textual": vML.baseDeDados['sim_textual'].values[0]
+            }
