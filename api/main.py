@@ -1,4 +1,5 @@
-from ml_recruitment import ML_Recruitment
+# from ml_recruitment import ML_Recruitment
+from api_interna.src.ml_recruitment import ML_Recruitment
 from fastapi import FastAPI
 from typing import List
 from pydantic import BaseModel
