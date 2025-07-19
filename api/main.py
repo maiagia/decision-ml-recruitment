@@ -45,4 +45,11 @@ def preverMatch(pRequisicao: PreverRequest) -> dict:
     vML.baseDeDados['sim_textual'] = vML.calcularSimilaridadeTextual(pListaColunas=['requisitos_vaga', 'cv_texto'])
 
     vResultado = vML.preverProbabilidades(pFeatures=vDados)
-    return {"match": vResultado.tolist()[0]}
+    print({
+        "match": vResultado.tolist()[0],
+        "sim_textual": vML.baseDeDados['sim_textual'].values[0]
+            })
+    return {
+        "match": vResultado.tolist()[0],
+        "sim_textual": vML.baseDeDados['sim_textual'].values[0]
+            }
