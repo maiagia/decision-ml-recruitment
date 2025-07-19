@@ -5,6 +5,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/api:${{ github.workspace }}/api_interna
 
     steps:
     - uses: actions/checkout@v3
