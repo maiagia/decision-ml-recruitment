@@ -6,10 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: ${{ github.workspace }}/api:${{ github.workspace }}/api_interna
+      PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/api:${{ github.workspace }}/api_interna
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout do código
+      uses: actions/checkout@v3
 
     - name: Configurar Python
       uses: actions/setup-python@v4
@@ -25,4 +26,5 @@ jobs:
 
     - name: Rodar os testes com pytest
       run: |
+        echo "PYTHONPATH=$PYTHONPATH"
         pytest tests/ --disable-warnings
