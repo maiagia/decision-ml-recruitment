@@ -21,12 +21,11 @@ RUN pip install -r requirements.txt
 # Volta para a raiz do projeto
 WORKDIR /app-streamlit
 
-# Copia e habilita o script de start
-COPY start.sh /app-streamlit/start.sh
+# Habilita o script de start (já foi copiado com o COPY . /app-streamlit)
 RUN chmod +x /app-streamlit/start.sh
 
 # Expõe as portas usadas pelos dois apps
 EXPOSE 8000 8501
 
 # Executa os dois apps
-CMD ["/app-streamlit/start.sh"]
+CMD ["./start.sh"]
