@@ -27,6 +27,13 @@ Este projeto propõe uma solução prática e escalável para otimizar o process
 
 ---
 
+## 📹 Demonstração em Vídeo
+
+👉 Apresentação do projeto:  
+📺 *[(https://github.com/maiagia/decision-ml-recruitment/blob/main/Entrega5.mp4)]*
+
+---
+
 ## 🧱 Estrutura do Projeto
 
 ```bash
@@ -157,12 +164,6 @@ pytest tests/
 
 ---
 
-## 📹 Demonstração em Vídeo
-
-👉 Apresentação do projeto:  
-📺 *[Inserir link do YouTube ou Google Drive]*
-
----
 
 ## 📈 Monitoramento
 
